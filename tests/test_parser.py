@@ -1,8 +1,10 @@
 """Unit tests for the .env parser."""
 
+import os
+import tempfile
 import unittest
 
-from dotenv_drift.parser import ParsedEnv, parse_text
+from dotenv_drift.parser import ParsedEnv, parse_file, parse_text
 
 
 class TestParserBasics(unittest.TestCase):
@@ -78,6 +80,21 @@ class TestParserBasics(unittest.TestCase):
     def test_export_tab_prefix(self):
         env = parse_text("export\tFOO=bar\n")
         self.assertEqual(env.values["FOO"], "bar")
+
+    def test_bom_stripped_from_file(self):
+        # Files saved by Windows editors often start with a UTF-8 BOM;
+        # it must not corrupt the first key.
+        with tempfile.NamedTemporaryFile(
+            "wb", suffix=".env", delete=False
+        ) as fh:
+            fh.write(b"\xef\xbb\xbfFOO=bar\nBAZ=qux\n")
+            path = fh.name
+        try:
+            env = parse_file(path)
+        finally:
+            os.unlink(path)
+        self.assertEqual(env.values, {"FOO": "bar", "BAZ": "qux"})
+        self.assertEqual(env.errors, [])
 
 
 if __name__ == "__main__":

@@ -110,6 +110,7 @@ Exit code: `1`.
 - `'single quoted'` values are literal; `"double quoted"` values process `\n`, `\t`, `\r`, `\\`, `\"` (unknown escapes keep the backslash).
 - Everything after the first `=` belongs to the value, so `DATABASE_URL=...?a=b` works.
 - Keys must match `[A-Za-z_][A-Za-z0-9_]*`; malformed lines are parse errors (exit code `2`).
+- A leading UTF-8 BOM (e.g. files saved by Windows Notepad) is stripped before parsing.
 
 ## Limitations
 

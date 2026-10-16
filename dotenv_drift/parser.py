@@ -108,7 +108,7 @@ def parse_line(line: str, lineno: int, duplicates: list, errors: list):
             errors.append("line %d: 'export' without assignment" % lineno)
             return None
     if "=" not in stripped:
-        errors.append("line %d: no '=' found, line ignored" % lineno)
+        errors.append("line %d: no '=' found" % lineno)
         return None
     key, _, raw_value = stripped.partition("=")
     key = key.strip()
@@ -138,6 +138,10 @@ def parse_text(text: str) -> ParsedEnv:
 
 
 def parse_file(path: str) -> ParsedEnv:
-    """Read and parse a .env-style file from disk."""
-    with open(path, "r", encoding="utf-8") as fh:
+    """Read and parse a .env-style file from disk.
+
+    Files are read as UTF-8; a leading UTF-8 BOM (common in files saved
+    by Windows editors) is stripped so it does not corrupt the first key.
+    """
+    with open(path, "r", encoding="utf-8-sig") as fh:
         return parse_text(fh.read())
